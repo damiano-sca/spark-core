@@ -20,7 +20,7 @@ import it.unitn.dbtrento.spark.utils.OutputFormat;
 public class SparkWriter {
 
   public static boolean write(SparkSession spark, Dataset<Row> data, boolean hasHeader,
-      String outputPath, OutputFormat outputFormat) {
+      String outputPath, OutputFormat outputFormat, String outputName) {
     if (data == null) {
       System.out.println("Not able to write the data...");
       return false;
@@ -33,11 +33,11 @@ public class SparkWriter {
     }
     Map<String, String> options = new HashMap<>();
     options.put("header", String.valueOf(hasHeader));
-    return write(spark, data, options, outputPath, outputFormat);
+    return write(spark, data, options, outputPath, outputFormat, outputName);
   }
 
   public static boolean write(SparkSession spark, Dataset<Row> data, Map<String, String> options,
-      String outputPath, OutputFormat outputFormat) {
+      String outputPath, OutputFormat outputFormat, String outputName) {
     try {
       switch (outputFormat) {
         case CSV:
@@ -53,8 +53,8 @@ public class SparkWriter {
             FileUtil.copyMerge(
                 FileSystem.get(new URI(outputPath + "/partial/"), new Configuration()),
                 new Path(outputPath + "/partial/"),
-                FileSystem.get(new URI(outputPath + "/output.csv"), new Configuration()),
-                new Path(outputPath + "/output.csv"), true,
+                FileSystem.get(new URI(outputPath + "/" + outputName + ".csv"), new Configuration()),
+                new Path(outputPath + "/" + outputName + ".csv"), true,
                 spark.sparkContext().hadoopConfiguration(), null);
           } catch (IllegalArgumentException | IOException | URISyntaxException e) {
             System.err.println("Error " + e.getMessage() + "while writing the data");
